@@ -2,9 +2,42 @@
 import re
 import requests
 import mylogging
+import db
 from bs4 import BeautifulSoup
+import enum
+
 
 crawlLogger = mylogging.MyLogger("crawler")
+
+dbi = db.MyDB()
+
+class isUrlCrawled(enum.Enum):
+    TRUE = 1
+    FALSE = 2
+    ERROR = 3
+
+
+def insertUrls(urlList):
+    insertUrlToUrls = """
+    INSERT INTO urls (url, state, urlhash) VALUES (%s, "FALSE", md5(%s))
+    """
+    crawlLogger.debug("insertUrls")
+    for url in urlList:
+        dbi.insert(insertUrlToUrls, (url, url))
+    return
+
+
+def insertNamuwikiDB(dbTuple):
+    insertDBQuery = """
+    INSERT INTO namuwiki (title, url, content, image, editdate, crawltime, urlhash)\
+    VALUES (%s, %s, %s, %s, %s, NOW(), md5(%s))
+    """
+    crawlLogger.debug('insertNamuwikiDB')
+
+    dbi.insert(insertDBQuery, dbTuple)
+    return
+
+
 
 def get_html(url):
     crawlLogger.debug('get_html')
@@ -81,75 +114,16 @@ def getCrawl(pageUrl):
         editDate = getEditDate(bsObj)
         image = getImage(bsObj)
         dbTuple = (title, fullPageUrl, content, image, editDate, html)
+        linkSet = set()
+        for link in bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
+            linkSet.add(link.get('href'))
+        insertNamuwikiDB(dbTuple)
+        insertUrls(linkSet)
 
-        return dbTuple
+        return
 
     except Exception as e:
         crawlLogger.error(e)
 
 
-# def updateCrawl(pageUrl):
-#     fullPageUrl = "https://namu.wiki" + pageUrl
-#     html = get_html(fullPageUrl)
-#     bsObj = BeautifulSoup(html, 'html.parser')
-#
-#     if bsObj == None:
-#         return None
-#
-#     try:
-#         title = getTitle(bsObj)
-#         mylogger.debug(title, 'updateCrawl - title')
-#         content = getContent(bsObj)
-#         mylogger.debug(content, 'updateCrawl - content')
-#         editDate = getEditDate(bsObj)
-#         mylogger.debug(editDate, 'updateCrawl - editdate')
-#         image = getImage(bsObj)
-#         mylogger.debug(image, 'updateCrawl - image')
-#         updateNamuwikiId = editDateUpdated(pageUrl, editDate)
-#         if updateNamuwikiId > 0:
-#             dbTuple = (pageUrl, title, content, image, editDate, htmlTxt, updateNamuwikiId)
-#             updateNamuwikiDB(dbTuple)
-#             print
-#             "update DB"
-#
-#     except Exception as e:
-#         mylogger.error(e, 'updateCrawl Error')
-#     return
 
-
-if __name__ == '__main__':
-    insertUrls(['/w/'])
-    getCrawl('/w/')
-
-    # while True:
-    #     try:
-    #         for pageUrl in selectUncrawledUrl():
-    #             try:
-    #                 getCrawl(pageUrl)
-    #
-    #             except:
-    #                 print
-    #                 "getCrawl Error", type(e)
-    #                 updateUrlState(pageUrl, "error")
-    #             time.sleep(3)
-    #
-    #     except Exception as e:
-    #         print
-    #         "selectUncrawledUrl Error", type(e)
-    #
-    #     try:
-    #         print
-    #         "update DB"
-    #         for scrapedUrl in selectScrapedUrl():
-    #             try:
-    #                 updateCrawl(scrapedUrl)
-    #             except:
-    #                 print
-    #                 "updateCrawl Error", type(e)
-    #                 updateUrlState(pageUrl, "error")
-    #             time.sleep(3)
-    #     except Exception as e:
-    #         print
-    #         "selectScrapedUrl Error", type(e)
-    #
-    #
