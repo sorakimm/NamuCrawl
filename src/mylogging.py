@@ -69,7 +69,7 @@ class MyLogger(logging.Logger):
             pass
         try:
             fileHd = logging.FileHandler('log/%s.log' % filename, 'w')
-            fileHd.setLevel(logging.INFO)
+            fileHd.setLevel(logging.DEBUG)
             fileHd.setFormatter(fmtHandler)
             self.addHandler(fileHd)
         except Exception as reason:

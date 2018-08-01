@@ -5,52 +5,27 @@ import mylogging
 import db
 from bs4 import BeautifulSoup
 import enum
-
+import db
 
 crawlLogger = mylogging.MyLogger("crawler")
-
-dbi = db.MyDB()
-
-class isUrlCrawled(enum.Enum):
-    TRUE = 1
-    FALSE = 2
-    ERROR = 3
-
-
-def insertUrls(urlList):
-    insertUrlToUrls = """
-    INSERT INTO urls (url, state, urlhash) VALUES (%s, "FALSE", md5(%s))
-    """
-    crawlLogger.debug("insertUrls")
-    for url in urlList:
-        dbi.insert(insertUrlToUrls, (url, url))
-    return
-
-
-def insertNamuwikiDB(dbTuple):
-    insertDBQuery = """
-    INSERT INTO namuwiki (title, url, content, image, editdate, crawltime, urlhash)\
-    VALUES (%s, %s, %s, %s, %s, NOW(), md5(%s))
-    """
-    crawlLogger.debug('insertNamuwikiDB')
-
-    dbi.insert(insertDBQuery, dbTuple)
-    return
 
 
 
 def get_html(url):
-    crawlLogger.debug('get_html')
+    crawlLogger.info('get_html')
     _html = ""
+    try:
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            _html = resp.text
 
-    resp = requests.get(url)
-    if resp.status_code == 200:
-        _html = resp.text
+    except requests.exceptions.RequestException as e:
+        crawlLogger.error(e)
     return _html
 
 
 def getTitle(bsObj):
-    crawlLogger.debug('getTitle')
+    crawlLogger.info('getTitle')
     try:
         title = bsObj.find("h1", {"class": "title"}).text.strip()
         return title
@@ -63,7 +38,7 @@ def getTitle(bsObj):
 def getImage(bsObj):
     try:
         fullImageUrl = ""
-        crawlLogger.debug('getImage')
+        crawlLogger.info('getImage')
         imgPattern = re.compile('^(파일:)(?!나무위키).*?$')
         for imageUrl in bsObj.findAll("img", {"data-src": re.compile('^(//cdn.namuwikiusercontent.com)(.*?)$')}):
             if imgPattern.search(imageUrl.attrs['alt']):
@@ -79,7 +54,7 @@ def getImage(bsObj):
 
 def getEditDate(bsObj):
     try:
-        crawlLogger.debug('getEditDate')
+        crawlLogger.info('getEditDate')
         editDate = bsObj.find("p", {"class": "wiki-edit-date"}).find("time").text
         return editDate
 
@@ -90,7 +65,7 @@ def getEditDate(bsObj):
 
 def getContent(bsObj):
     try:
-        crawlLogger.debug('getContent')
+        crawlLogger.info('getContent')
         content = bsObj.find("div", {"class": "wiki-inner-content"}).get_text(" ")
         content = re.sub(r'\s{2,}', ' ', content)
         return content
@@ -102,7 +77,7 @@ def getContent(bsObj):
 
 def getCrawl(pageUrl):
     try:
-        crawlLogger.debug('getCrawl')
+        crawlLogger.info('getCrawl')
         fullPageUrl = "https://namu.wiki" + pageUrl
         html = get_html(fullPageUrl)
         bsObj = BeautifulSoup(html, 'html.parser')
@@ -114,16 +89,19 @@ def getCrawl(pageUrl):
         editDate = getEditDate(bsObj)
         image = getImage(bsObj)
         dbTuple = (title, fullPageUrl, content, image, editDate, html)
+        db.insertNamuwikiDB(dbTuple)
+
+
         linkSet = set()
+        crawlLogger.debug(linkSet)
         for link in bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
             linkSet.add(link.get('href'))
-        insertNamuwikiDB(dbTuple)
-        insertUrls(linkSet)
+        # db.insertUrls(linkSet)
 
-        return
+        return linkSet
 
     except Exception as e:
         crawlLogger.error(e)
-
+        crawlLogger.debug(dbTuple)
 
 

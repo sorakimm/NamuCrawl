@@ -1,32 +1,63 @@
 
 # db.py
 from src import config
-import sys
 import pymysql
 import mylogging
-
-# sys.path.append('/opt/settings')
+import enum
+import dbConnect
 
 dbLogger = mylogging.MyLogger("db")
 
-class MyDB(object):
-    def __init__(self):
-        dbLogger.debug(("MyDB init"))
-        self._db_connection = pymysql.connect(host=config.DATABASE_CONFIG['host'],
-                               user=config.DATABASE_CONFIG['user'],
-                               password=config.DATABASE_CONFIG['password'],
-                               db=config.DATABASE_CONFIG['dbname'])
-        self._db_connection.set_charset('utf8mb4')
-        self._db_cur = self._db_connection.cursor()
+class isUrlCrawled(enum.Enum):
+    TRUE = 1
+    FALSE = 2
+    ERROR = 3
 
-    def insert(self, query, params=None):
-        dbLogger.debug("db insert")
-        self._db_cur.execute(query, params)
-        return self._db_connection.commit()
+dbi = dbConnect.DBConnect()
 
-    def query(self, query, params):
-        return self._db_cur.execute(query, params)
+def insertUrls(urlList):
+    insertUrlToUrls = """
+    INSERT INTO urls (url, state, urlhash) VALUES (%s, "FALSE", md5(%s))
+    """
+    dbLogger.debug("insertUrls")
+    for url in urlList:
+        dbi.insert(insertUrlToUrls, (url, url))
+    return
 
-    def __del__(self):
-        self._db_connection.close()
-        self._db_cur.close()
+    # db.beginTransction();
+    #     try {
+    #         while(...){
+    #             insert();
+    #         }
+    #         db.setTransctionSuccessful();
+    #     } catch (Exception e){
+    #         ...
+    #     } finally {
+    #         db.endTransction();
+    #     }
+
+
+def insertNamuwikiDB(dbTuple):
+    insertDBQuery = """
+    INSERT INTO namuwiki (title, url, content, image, editdate, crawltime, urlhash)\
+    VALUES (%s, %s, %s, %s, %s, NOW(), md5(%s))
+    """
+    dbLogger.info('insertNamuwikiDB')
+    try:
+        dbi.insert(insertDBQuery, dbTuple)
+    except pymysql.IntegrityError:
+        dbLogger.error(dbTuple)
+    return
+
+def selectUrls(offset):
+    selectUrlQuery = """
+    SELECT url FROM namuwiki LIMIT 100 OFFSET %s
+    """
+    dbLogger.info("selectUrls")
+    return dbi.select(selectUrlQuery, offset)
+
+def countRows():
+    dbLogger.info("countRows")
+    return dbi.rows()
+
+
