@@ -26,7 +26,7 @@ def get_html(url):
 
 def getTitle(bsObj):
     try:
-        title = bsObj.find("span", {"class": "wiki-document-title"}).text.strip()
+        title = bsObj.find("h1", {"class": "title"}).text.strip()
         crawlLogger.info('getTitle : ' + title)
         return title
 

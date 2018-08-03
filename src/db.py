@@ -15,30 +15,7 @@ class isUrlCrawled(enum.Enum):
 
 dbi = dbConnect.DBConnect()
 
-def insertUrls(urlList):
-    insertUrlToUrls = """
-    INSERT INTO urls (url, state, urlhash) VALUES (%s, "FALSE", md5(%s))
-    """
-    dbLogger.debug("insertUrls")
-    for url in urlList:
-        dbi.insert(insertUrlToUrls, (url, url))
-    return
-
-    # db.beginTransction();
-    #     try {
-    #         while(...){
-    #             insert();
-    #         }
-    #         db.setTransctionSuccessful();
-    #     } catch (Exception e){
-    #         ...
-    #     } finally {
-    #         db.endTransction();
-    #     }
-
-
 def insertNamuwikiDB(dbTuple):
-
     insertDBQuery = """
         INSERT INTO namuwiki (title, url, content, image, editdate, crawltime, html, urlhash)\
         VALUES (%s, %s, %s, %s, %s, NOW(), %s, md5(%s))
@@ -47,8 +24,10 @@ def insertNamuwikiDB(dbTuple):
         """
 
     dbLogger.info('insertNamuwikiDB')
-    dbi.insert(insertDBQuery, dbTuple + dbTuple[:-1])
-
+    try:
+        dbi.insert(insertDBQuery, dbTuple + dbTuple[:-1])
+    except:
+        dbLogger.error(dbTuple)
     return
 
 def selectUrls(offset):

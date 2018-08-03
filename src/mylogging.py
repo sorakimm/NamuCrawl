@@ -57,7 +57,7 @@ class MyLogger(logging.Logger):
 
         try:
             consoleHd = logging.StreamHandler()
-            consoleHd.setLevel(logging.ERROR)
+            consoleHd.setLevel(logging.INFO)
             consoleHd.setFormatter(fmtHandler)
             self.addHandler(consoleHd)
         except Exception as reason:
