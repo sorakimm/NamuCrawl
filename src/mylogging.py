@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding:utf-8 -*-
 
 import logging
 
@@ -57,7 +57,7 @@ class MyLogger(logging.Logger):
 
         try:
             consoleHd = logging.StreamHandler()
-            consoleHd.setLevel(logging.DEBUG)
+            consoleHd.setLevel(logging.ERROR)
             consoleHd.setFormatter(fmtHandler)
             self.addHandler(consoleHd)
         except Exception as reason:
@@ -69,7 +69,7 @@ class MyLogger(logging.Logger):
             pass
         try:
             fileHd = logging.FileHandler('log/%s.log' % filename, 'w')
-            fileHd.setLevel(logging.DEBUG)
+            fileHd.setLevel(logging.ERROR)
             fileHd.setFormatter(fmtHandler)
             self.addHandler(fileHd)
         except Exception as reason:

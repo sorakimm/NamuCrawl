@@ -12,7 +12,7 @@ crawlLogger = mylogging.MyLogger("crawler")
 
 
 def get_html(url):
-    crawlLogger.info('get_html')
+    crawlLogger.info('get_html : ' + url)
     _html = ""
     try:
         resp = requests.get(url)
@@ -25,9 +25,9 @@ def get_html(url):
 
 
 def getTitle(bsObj):
-    crawlLogger.info('getTitle')
     try:
-        title = bsObj.find("h1", {"class": "title"}).text.strip()
+        title = bsObj.find("span", {"class": "wiki-document-title"}).text.strip()
+        crawlLogger.info('getTitle : ' + title)
         return title
 
     except Exception as e:
@@ -38,11 +38,11 @@ def getTitle(bsObj):
 def getImage(bsObj):
     try:
         fullImageUrl = ""
-        crawlLogger.info('getImage')
         imgPattern = re.compile('^(파일:)(?!나무위키).*?$')
         for imageUrl in bsObj.findAll("img", {"data-src": re.compile('^(//cdn.namuwikiusercontent.com)(.*?)$')}):
             if imgPattern.search(imageUrl.attrs['alt']):
                 fullImageUrl = 'https:' + imageUrl.attrs['data-src']
+                crawlLogger.info('getImage : ' + fullImageUrl)
                 break
 
         return fullImageUrl
@@ -54,8 +54,8 @@ def getImage(bsObj):
 
 def getEditDate(bsObj):
     try:
-        crawlLogger.info('getEditDate')
         editDate = bsObj.find("p", {"class": "wiki-edit-date"}).find("time").text
+        crawlLogger.info('getEditDate : ' + editDate)
         return editDate
 
     except Exception as e:
@@ -65,9 +65,9 @@ def getEditDate(bsObj):
 
 def getContent(bsObj):
     try:
-        crawlLogger.info('getContent')
         content = bsObj.find("div", {"class": "wiki-inner-content"}).get_text(" ")
         content = re.sub(r'\s{2,}', ' ', content)
+        crawlLogger.info('getContent')
         return content
 
     except Exception as e:
@@ -88,7 +88,7 @@ def getCrawl(pageUrl):
         content = getContent(bsObj)
         editDate = getEditDate(bsObj)
         image = getImage(bsObj)
-        dbTuple = (title, fullPageUrl, content, image, editDate, html)
+        dbTuple = (title, fullPageUrl, content, image, editDate, html, fullPageUrl)
         db.insertNamuwikiDB(dbTuple)
 
 
@@ -96,12 +96,10 @@ def getCrawl(pageUrl):
         crawlLogger.debug(linkSet)
         for link in bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
             linkSet.add(link.get('href'))
-        # db.insertUrls(linkSet)
 
         return linkSet
 
     except Exception as e:
-        crawlLogger.error(e)
-        crawlLogger.debug(dbTuple)
+        crawlLogger.error(dbTuple)
 
 
