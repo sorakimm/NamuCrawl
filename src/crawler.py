@@ -20,7 +20,7 @@ def get_html(url):
             _html = resp.text
 
     except requests.exceptions.RequestException as e:
-        crawlLogger.error(e)
+        crawlLogger.error(e + "url : " + url)
     return _html
 
 
@@ -31,7 +31,7 @@ def getTitle(bsObj):
         return title
 
     except Exception as e:
-        crawlLogger.error(e)
+        crawlLogger.error(e + "title : " + title)
         return None
 
 
@@ -59,7 +59,7 @@ def getEditDate(bsObj):
         return editDate
 
     except Exception as e:
-        crawlLogger.error(e)
+        crawlLogger.error(e + "editdate : " + editDate)
         return None
 
 
