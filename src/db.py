@@ -1,17 +1,10 @@
 # -*- coding:utf-8 -*-
 # db.py
-from src import config
-import pymysql
-import mylogging
-import enum
+from mylogging import MyLogger
 import dbConnect
 
-dbLogger = mylogging.MyLogger("db")
-
-class isUrlCrawled(enum.Enum):
-    TRUE = 1
-    FALSE = 2
-    ERROR = 3
+dbLogFile = 'log/db.log'
+dbLogger = MyLogger(dbLogFile)
 
 dbi = dbConnect.DBConnect()
 
@@ -30,15 +23,14 @@ def insertNamuwikiDB(dbTuple):
         dbLogger.error(dbTuple)
     return
 
-def selectUrls(offset):
-    selectUrlQuery = """
-    SELECT url FROM namuwiki LIMIT 100 OFFSET %s
-    """
-    dbLogger.info("selectUrls")
-    return dbi.select(selectUrlQuery, offset)
-
 def countRows():
     dbLogger.info("countRows")
     return dbi.rows()
 
+def selectRecentUrl():
+    selectRecentUrl = """
+    SELECT url FROM namuwiki ORDER BY id DESC
+    """
+    dbLogger.info("selectRecentUrl")
+    return dbi.select(selectRecentUrl)
 

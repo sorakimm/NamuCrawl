@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 from src import config
 import pymysql
-import mylogging
+from mylogging import MyLogger
 
-# sys.path.append('/opt/settings')
-dbConnectLogger = mylogging.MyLogger("db")
+dbConnectLogFile = 'log/dbConnect.log'
+dbConnectLogger = MyLogger(dbConnectLogFile)
 
 class DBConnect(object):
     def __init__(self):
@@ -22,12 +22,12 @@ class DBConnect(object):
         return self._db_connection.commit()
 
 
-    def select(self, query, params):
+    def select(self, query):
         try:
-            self._db_cur.execute(query, params)
+            self._db_cur.execute(query)
         except:
             dbConnectLogger.error("select Error : "+ query)
-        return self._db_cur.fetchall()
+        return self._db_cur.fetchone()[0]
 
     def rows(self):
         try:
