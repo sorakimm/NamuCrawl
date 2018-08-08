@@ -31,8 +31,9 @@ class MyLogger(logging.Logger):
             self.error("%s" % reason)
 
         try:
-            rtfHandler = logging.handlers.BaseRotatingHandler(
+            rtfHandler = logging.handlers.RotatingFileHandler(
                 filename, maxBytes=10 * 1024 * 1024, backupCount=5)
+
         except Exception as reason:
             self.error("%s" % reason)
         else:
