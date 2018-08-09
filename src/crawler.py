@@ -21,6 +21,7 @@ class Crawler():
         self.content = ""
         self.html = ""
         self.bsObj = ""
+        self.linkList = []
         self.dbTuple = tuple()
 
     def getCrawl(self, _url):
@@ -39,6 +40,9 @@ class Crawler():
                     self.getEditDate()
                     self.getContent()
 
+                    for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
+                        self.linkList.append(urljoin(baseUrl, link.get('href')))
+
                 if resp.status_code == 404:
                     self.getTitle()
                     self.image = None
@@ -51,12 +55,8 @@ class Crawler():
             self.dbTuple = (self.title, self.url, self.content, self.image, self.editdate, self.html, self.url)
             db.insertNamuwikiDB(self.dbTuple)
 
-            linkList = []
-            crawlLogger.debug(linkList)
-            for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
-                linkList.append(urljoin(baseUrl, link.get('href')))
 
-            return linkList
+            return self.linkList
 
         except Exception as e:
             crawlLogger.error(e)
