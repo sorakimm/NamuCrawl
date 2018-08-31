@@ -1,0 +1,62 @@
+# -*- coding:utf-8 -*-
+# db.py
+from mylogging import MyLogger
+import dbConnect
+
+dbLogFile = 'log/db.log'
+dbLogger = MyLogger(dbLogFile)
+
+dbi = dbConnect.DBConnect()
+
+class DB():
+    def makeNamuwikiTable(self):
+        makeTableQuery = """
+             CREATE TABLE `namuwiki_db`.`namuwiki` (
+            `id` INT(11) NOT NULL AUTO_INCREMENT,
+            `title` VARCHAR(1300) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
+            `url` VARCHAR(1300) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
+            `content` LONGTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
+            `image` VARCHAR(1300) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
+            `editdate` VARCHAR(45) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
+            `crawltime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            `html` LONGTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
+            `url_copy1` CHAR(32) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL);
+        """
+
+        dbLogger.info("makeNamuwikiDB")
+        try:
+            return dbi.query(makeTableQuery)
+        except Exception as e:
+            return dbLogger.error(e)
+
+    def insertNamuwikiDB(self, dbTuple):
+        insertDBQuery = """
+            INSERT INTO namuwiki (title, url, content, image, editdate, crawltime, html, urlhash)\
+            VALUES (%s, %s, %s, %s, %s, NOW(), %s, md5(%s))
+            ON DUPLICATE KEY UPDATE 
+            title=%s, url=%s, content=%s, image=%s, editdate=%s, crawltime=NOW(), html=%s
+            """
+
+        dbLogger.info('insertNamuwikiDB')
+        try:
+            return dbi.insert(insertDBQuery, dbTuple + dbTuple[:-1])
+        except Exception as e:
+            return dbLogger.error(e + dbTuple)
+
+    def countRows(self):
+        dbLogger.info("countRows")
+        try:
+            return dbi.rows()
+        except Exception as e:
+            return dbLogger.error(e)
+
+
+    def selectRecentUrl(self):
+        selectRecentUrl = """
+        SELECT url FROM namuwiki ORDER BY id DESC
+        """
+        dbLogger.info("selectRecentUrl")
+        try:
+            return dbi.select(selectRecentUrl)
+        except Exception as e:
+            return dbLogger.error(e)
