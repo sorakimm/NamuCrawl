@@ -42,7 +42,7 @@ class Crawler():
                     "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
                 options.add_argument("lang=ko_KR")  # 한국어
                 driver = webdriver.Chrome(chrome_options=options,
-                                          executable_path=os.getcwd() +"\\venv\\Lib\\chromedriver.exe")
+                                          executable_path=os.getcwd() +"\\chromedriver.exe")
 
                 driver.get(self.url)
                 self.html = driver.page_source

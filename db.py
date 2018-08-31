@@ -11,8 +11,8 @@ dbi = dbConnect.DBConnect()
 class DB():
     def makeNamuwikiTable(self):
         makeTableQuery = """
-             CREATE TABLE `namuwiki_db`.`namuwiki` (
-            `id` INT(11) NOT NULL AUTO_INCREMENT,
+             CREATE TABLE IF NOT EXISTS `namuwiki_db`.`namuwiki` (
+            `id` INT NOT NULL AUTO_INCREMENT,
             `title` VARCHAR(1300) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
             `url` VARCHAR(1300) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
             `content` LONGTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
@@ -20,8 +20,14 @@ class DB():
             `editdate` VARCHAR(45) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
             `crawltime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             `html` LONGTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
-            `url_copy1` CHAR(32) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL);
+            `urlhash` CHAR(32) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
+            PRIMARY KEY (`id`))
+            ENGINE = InnoDB
+            DEFAULT CHARACTER SET = utf8mb4
+            COLLATE = utf8mb4_unicode_ci;            
         """
+
+
 
         dbLogger.info("makeNamuwikiDB")
         try:
