@@ -29,7 +29,7 @@ class DB():
 
 
 
-        dbLogger.info("makeNamuwikiDB")
+        dbLogger.debug("makeNamuwikiDB")
         try:
             return dbi.query(makeTableQuery)
         except Exception as e:
@@ -43,14 +43,14 @@ class DB():
             title=%s, url=%s, content=%s, image=%s, editdate=%s, crawltime=NOW(), html=%s
             """
 
-        dbLogger.info('insertNamuwikiDB')
+        dbLogger.debug('insertNamuwikiDB')
         try:
             return dbi.insert(insertDBQuery, dbTuple + dbTuple[:-1])
         except Exception as e:
             return dbLogger.error(e + dbTuple)
 
     def countRows(self):
-        dbLogger.info("countRows")
+        dbLogger.debug("countRows")
         try:
             return dbi.rows()
         except Exception as e:
@@ -61,7 +61,7 @@ class DB():
         selectRecentUrl = """
         SELECT url FROM namuwiki ORDER BY id DESC
         """
-        dbLogger.info("selectRecentUrl")
+        dbLogger.debug("selectRecentUrl")
         try:
             return dbi.select(selectRecentUrl)
         except Exception as e:

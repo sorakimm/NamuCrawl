@@ -10,33 +10,29 @@ startPageUrl = "http://namu.wiki/w/"
 CRAWLTERM = 3.0
 db = DB()
 
+
+mainLogFile = 'log/main.log'
+mainLogger = MyLogger(mainLogFile)
+
 if __name__ == '__main__':
-
-    testlogger = MyLogger("test")
-    testlogger.debug('main.py')
-
     crawler = Crawler()
-    urlList = []
     db.makeNamuwikiTable()
 
+    url = startPageUrl
+    selectRecentUrl = db.selectRecentUrl()
+    mainLogger.info("selectRecentUrl : " + selectRecentUrl)
+
+    if len(selectRecentUrl) > 0:
+        url = selectRecentUrl
+
     while(1):
-        selectRecentUrl = db.selectRecentUrl()
-        testlogger.info("selectRecentUrl : " + selectRecentUrl)
-        urlList.append(selectRecentUrl) if len(selectRecentUrl) > 0 else urlList.append(startPageUrl)
+        mainLogger.info("url : " + url)
+        try:
+            crawler.getCrawl(url, 0)
+        except:
+            mainLogger.error("error url : " + url)
 
-        for url in urlList:
-            testlogger.info("url : " + url)
-            try:
-                crawlStart = time.time()
-                urlList.extend(crawler.getCrawl(url))
-
-            except:
-                testlogger.error("error url : " + url)
-            crawlEnd = time.time()
-            sleepTime = CRAWLTERM - (crawlEnd - crawlStart)
-            if sleepTime > 0 :
-                time.sleep(sleepTime)
-
+        url = crawler.getRecentChangeLink()[0]
 
 
 

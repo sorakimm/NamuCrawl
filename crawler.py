@@ -7,12 +7,13 @@ from mylogging import MyLogger
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from db import DB
-
+import time
 crawlLogFile = "log/crawler.log"
 crawlLogger = MyLogger(crawlLogFile)
 baseUrl = "https://namu.wiki/w/"
 
 db = DB()
+CRAWLTERM = 3.0
 
 
 
@@ -28,24 +29,17 @@ class Crawler():
         self.linkList = []
         self.dbTuple = tuple()
 
-    def getCrawl(self, _url):
+    def getCrawl(self, _url, recursionLevel):
         try:
             self.url = _url
             crawlLogger.debug("getCrawl url : " + self.url)
+            if recursionLevel > 4:
+                return
 
             try:
+                crawlStart = time.time()
                 resp = requests.get(self.url)
-                options = webdriver.ChromeOptions()
-                options.add_argument('headless')
-                options.add_argument("disable-gpu")
-                options.add_argument(
-                    "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-                options.add_argument("lang=ko_KR")  # 한국어
-                driver = webdriver.Chrome(chrome_options=options,
-                                          executable_path=os.getcwd() +"\\chromedriver.exe")
-
-                driver.get(self.url)
-                self.html = driver.page_source
+                self.html = resp.text
                 self.bsObj = BeautifulSoup(self.html, 'html.parser')
 
                 if resp.status_code == 200:
@@ -54,8 +48,6 @@ class Crawler():
                     self.getEditDate()
                     self.getContent()
 
-                    for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
-                        self.linkList.append(urljoin(baseUrl, link.get('href')))
 
                 if resp.status_code == 404:
                     self.getTitle()
@@ -63,20 +55,25 @@ class Crawler():
                     self.editdate = None
                     self.content = None
 
-                self.linkList.append(self.getRecentChangeLink())
-
-            except requests.exceptions.RequestException as e:
-                crawlLogger.error(e + "url : " + self.url)
+            except Exception as e:
+                crawlLogger.error(e)
 
             self.dbTuple = (self.title, self.url, self.content, self.image, self.editdate, self.html, self.url)
             db.insertNamuwikiDB(self.dbTuple)
+            crawlLogger.info("[rLevel " + str(recursionLevel) + "] title : " + self.title + " url : " + self.url)
+            crawlEnd = time.time()
+            sleepTime = CRAWLTERM - (crawlEnd - crawlStart)
+            if sleepTime > 0:
+                time.sleep(sleepTime)
 
+            for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
+                self.getCrawl(urljoin(baseUrl, link.get('href')), recursionLevel + 1)
 
-            return self.linkList
+            return
 
         except Exception as e:
             crawlLogger.error(e)
-
+            return
 
     def getTitle(self):
         try:
@@ -121,8 +118,23 @@ class Crawler():
 
     def getRecentChangeLink(self):
         recentChangeLinkList = []
+
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        options.add_argument("disable-gpu")
+        options.add_argument(
+            "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
+        options.add_argument("lang=ko_KR")  # 한국어
+        driver = webdriver.Chrome(chrome_options=options,
+                                  executable_path=os.getcwd() +"\\chromedriver.exe")
+
+        driver.get(baseUrl)
+        rHtml = driver.page_source
+        rBsObj = BeautifulSoup(rHtml, 'html.parser')
+
+
         try:
-            for recentChangeLink in self.bsObj.find("div", {"id": "recentChangeTable"}).findAll("a"):
+            for recentChangeLink in rBsObj.find("div", {"id": "recentChangeTable"}).findAll("a"):
                 recentChangeLinkList.append(recentChangeLink.get('href'))
             crawlLogger.debug(recentChangeLinkList)
 

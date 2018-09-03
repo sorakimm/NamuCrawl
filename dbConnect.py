@@ -8,7 +8,7 @@ dbConnectLogger = MyLogger(dbConnectLogFile)
 
 class DBConnect(object):
     def __init__(self):
-        dbConnectLogger.info(("DBConnect init"))
+        dbConnectLogger.debug(("DBConnect init"))
         self._db_connection = pymysql.connect(host=config.DATABASE_CONFIG['host'],
                                user=config.DATABASE_CONFIG['user'],
                                password=config.DATABASE_CONFIG['password'],
@@ -17,13 +17,13 @@ class DBConnect(object):
         self._db_cur = self._db_connection.cursor()
 
     def query(self, query, params=None):
-        dbConnectLogger.info("db query execute")
+        dbConnectLogger.debug("db query execute")
         self._db_cur.execute(query)
         return self._db_cur.fetchone()
 
 
     def insert(self, query, params=None):
-        dbConnectLogger.info("db insert")
+        dbConnectLogger.debug("db insert")
         self._db_cur.execute(query, params)
         return self._db_connection.commit()
 
