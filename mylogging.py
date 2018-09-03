@@ -18,26 +18,18 @@ class MyLogger(logging.Logger):
         except Exception as reason:
             self.error("%s" % reason)
 
+
         try:
             os.makedirs(os.path.dirname(filename))
         except Exception as reason:
             pass
         try:
-            fileHd = logging.FileHandler(filename)
-            fileHd.setLevel(logging.ERROR)
-            fileHd.setFormatter(fmtHandler)
-            self.addHandler(fileHd)
+            rtfileHd = logging.handlers.RotatingFileHandler(filename, maxBytes=10 * 1-24 * 1024, backupCount=5)
+            rtfileHd.setLevel(logging.INFO)
+            rtfileHd.setFormatter(fmtHandler)
+            self.addHandler(rtfileHd)
         except Exception as reason:
             self.error("%s" % reason)
-
-        try:
-            rtfHandler = logging.handlers.RotatingFileHandler(
-                filename, maxBytes=10 * 1024 * 1024, backupCount=5)
-
-        except Exception as reason:
-            self.error("%s" % reason)
-        else:
-            self.addHandler(rtfHandler)
 
         return
 

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-# db.py
+
 from mylogging import MyLogger
 import dbConnect
 

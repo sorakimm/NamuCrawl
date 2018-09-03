@@ -1,13 +1,9 @@
 # -*- coding:utf-8 -*-
 from mylogging import MyLogger
 from db import DB
-import db
 from crawler import Crawler
-import time
-from datetime import datetime
 
-startPageUrl = "http://namu.wiki/w/"
-CRAWLTERM = 3.0
+START_PAGE_URL = "http://namu.wiki/w/"
 db = DB()
 
 
@@ -18,7 +14,7 @@ if __name__ == '__main__':
     crawler = Crawler()
     db.makeNamuwikiTable()
 
-    url = startPageUrl
+    url = START_PAGE_URL
     selectRecentUrl = db.selectRecentUrl()
     mainLogger.info("selectRecentUrl : " + selectRecentUrl)
 
@@ -26,7 +22,7 @@ if __name__ == '__main__':
         url = selectRecentUrl
 
     while(1):
-        mainLogger.info("url : " + url)
+        mainLogger.debug("main url : " + url)
         try:
             crawler.getCrawl(url, 0)
         except:

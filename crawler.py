@@ -8,13 +8,14 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from db import DB
 import time
+
 crawlLogFile = "log/crawler.log"
 crawlLogger = MyLogger(crawlLogFile)
+
 baseUrl = "https://namu.wiki/w/"
 
 db = DB()
 CRAWLTERM = 3.0
-
 
 
 class Crawler():
@@ -66,8 +67,9 @@ class Crawler():
             if sleepTime > 0:
                 time.sleep(sleepTime)
 
-            for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
-                self.getCrawl(urljoin(baseUrl, link.get('href')), recursionLevel + 1)
+            if resp.status_code == 200:
+                for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
+                    self.getCrawl(urljoin(baseUrl, link.get('href')), recursionLevel + 1)
 
             return
 
@@ -134,13 +136,13 @@ class Crawler():
 
 
         try:
-            for recentChangeLink in rBsObj.find("div", {"id": "recentChangeTable"}).findAll("a"):
-                recentChangeLinkList.append(recentChangeLink.get('href'))
-            crawlLogger.debug(recentChangeLinkList)
+            recentChangeLink = rBsObj.find("div", {"id": "recentChangeTable"}).find("a")
+            # for recentChangeLink in rBsObj.find("div", {"id": "recentChangeTable"}).findAll("a"):
+            #     recentChangeLinkList.append(recentChangeLink.get('href'))
 
         except Exception as e:
             crawlLogger.error(e)
 
-        return recentChangeLinkList
+        return recentChangeLink
 
 
