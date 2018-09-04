@@ -1,18 +1,17 @@
 # -*- coding:utf-8 -*-
 import re
 import requests
-import os
 from requests.compat import urljoin
 from mylogging import MyLogger
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from db import DB
 import time
-
+from urllib.parse import quote
 crawlLogFile = "log/crawler.log"
 crawlLogger = MyLogger(crawlLogFile)
 
-baseUrl = "https://namu.wiki/w/"
+BASE_URL = "https://namu.wiki/w/"
+RECENTCHANGE_URL = "https://namu.wiki/sidebar.json"
 
 db = DB()
 CRAWLTERM = 3.0
@@ -75,7 +74,7 @@ class Crawler():
 
             if resp.status_code == 200:
                 for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
-                    self.getCrawl(urljoin(baseUrl, link.get('href')), recursionLevel + 1)
+                    self.getCrawl(urljoin(BASE_URL, link.get('href')), recursionLevel + 1)
 
             return
 
@@ -125,31 +124,6 @@ class Crawler():
 
 
     def getRecentChangeLink(self):
-        recentChangeLinkList = []
-
-        options = webdriver.ChromeOptions()
-        # options.add_argument('--headless')
-        options.add_argument("disable-gpu")
-        options.add_argument(
-            "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-        options.add_argument("lang=ko_KR")  # 한국어
-        driver = webdriver.Chrome(chrome_options=options,
-                                  executable_path=os.getcwd() +"\\chromedriver.exe")
-
-        driver.get(baseUrl)
-        rHtml = driver.page_source
-        rBsObj = BeautifulSoup(rHtml, 'html.parser')
-
-
-        try:
-            recentChangeLink = urljoin(baseUrl, rBsObj.find("div", {"id": "recentChangeTable"}).find("a").get('href'))
-            # for recentChangeLink in rBsObj.find("div", {"id": "recentChangeTable"}).findAll("a"):
-            #     recentChangeLinkList.append(recentChangeLink.get('href'))
-
-        except Exception as e:
-            crawlLogger.error(e)
-
-
-        return recentChangeLink
-
-
+        resp = requests.get(RECENTCHANGE_URL)
+        data = resp.json()
+        return urljoin(BASE_URL, quote(data[0]['document']))
