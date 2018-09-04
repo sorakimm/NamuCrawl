@@ -14,8 +14,10 @@ if __name__ == '__main__':
     crawler = Crawler()
     db.makeNamuwikiTable()
 
+
     url = START_PAGE_URL
     selectRecentUrl = db.selectRecentUrl()
+
     mainLogger.info("selectRecentUrl : " + selectRecentUrl)
 
     if len(selectRecentUrl) > 0:
@@ -28,7 +30,7 @@ if __name__ == '__main__':
         except:
             mainLogger.error("error url : " + url)
 
-        url = crawler.getRecentChangeLink()[0]
+        url = crawler.getRecentChangeLink()
 
 
 

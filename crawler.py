@@ -37,6 +37,12 @@ class Crawler():
             if recursionLevel > 4:
                 return
 
+
+            if db.recentCrawlCheck(self.url):
+                crawlLogger.info('recent crawled : ' +  self.url)
+                return
+
+
             try:
                 crawlStart = time.time()
                 resp = requests.get(self.url)
@@ -122,7 +128,7 @@ class Crawler():
         recentChangeLinkList = []
 
         options = webdriver.ChromeOptions()
-        options.add_argument('headless')
+        # options.add_argument('--headless')
         options.add_argument("disable-gpu")
         options.add_argument(
             "user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
@@ -136,12 +142,13 @@ class Crawler():
 
 
         try:
-            recentChangeLink = rBsObj.find("div", {"id": "recentChangeTable"}).find("a")
+            recentChangeLink = urljoin(baseUrl, rBsObj.find("div", {"id": "recentChangeTable"}).find("a").get('href'))
             # for recentChangeLink in rBsObj.find("div", {"id": "recentChangeTable"}).findAll("a"):
             #     recentChangeLinkList.append(recentChangeLink.get('href'))
 
         except Exception as e:
             crawlLogger.error(e)
+
 
         return recentChangeLink
 

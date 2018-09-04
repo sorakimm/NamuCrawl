@@ -47,7 +47,7 @@ class DB():
         try:
             return dbi.insert(insertDBQuery, dbTuple + dbTuple[:-1])
         except Exception as e:
-            return dbLogger.error(e + dbTuple)
+            return dbLogger.error(e)
 
     def countRows(self):
         dbLogger.debug("countRows")
@@ -64,5 +64,15 @@ class DB():
         dbLogger.debug("selectRecentUrl")
         try:
             return dbi.select(selectRecentUrl)
+        except Exception as e:
+            return dbLogger.error(e)
+
+    def recentCrawlCheck(self, _url):
+        recentCrawlCheck = """
+        SELECT id FROM namuwiki WHERE url=%s AND crawltime >  NOW() - INTERVAL 1 DAY
+        """
+        try:
+            return dbi.select(recentCrawlCheck, (_url))
+
         except Exception as e:
             return dbLogger.error(e)

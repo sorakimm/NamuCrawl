@@ -28,19 +28,18 @@ class DBConnect(object):
         return self._db_connection.commit()
 
 
-    def select(self, query):
+    def select(self, query, params=None):
         try:
-            self._db_cur.execute(query)
-        except:
-            dbConnectLogger.error("select Error : "+ query)
-        return self._db_cur.fetchone()[0]
+            self._db_cur.execute(query, params)
+            result = self._db_cur.fetchone()
+            if result:
+                return result[0]
+            else:
+                return None
 
-    def rows(self):
-        try:
-            return self._db_cur.rowcount
-        except:
-            dbConnectLogger.error("rows Error : ")
-            return None
+        except Exception as e:
+            dbConnectLogger.error(e)
+
 
     def __del__(self):
         self._db_connection.close()
