@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if len(selectRecentUrl) > 0:
         url = selectRecentUrl
 
-    while(1):
+    while True:
         mainLogger.debug("main url : " + url)
         try:
             crawler.getCrawl(url, 0)
