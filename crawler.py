@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from db import DB
 import time
 from urllib.parse import quote
+
 crawlLogFile = "log/crawler.log"
 crawlLogger = MyLogger(crawlLogFile)
 
