@@ -21,13 +21,12 @@ class DB():
             `crawltime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             `html` LONGTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL DEFAULT NULL,
             `urlhash` CHAR(32) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
-            PRIMARY KEY (`id`))
+            PRIMARY KEY (`id`),
+            UNIQUE INDEX `urlhash_UNIQUE` (`urlhash` ASC))
             ENGINE = InnoDB
             DEFAULT CHARACTER SET = utf8mb4
             COLLATE = utf8mb4_unicode_ci;            
         """
-
-
 
         dbLogger.debug("makeNamuwikiDB")
         try:
@@ -49,13 +48,6 @@ class DB():
         except Exception as e:
             return dbLogger.error(e)
 
-    def countRows(self):
-        dbLogger.debug("countRows")
-        try:
-            return dbi.rows()
-        except Exception as e:
-            return dbLogger.error(e)
-
 
     def selectRecentUrl(self):
         selectRecentUrl = """
@@ -66,6 +58,7 @@ class DB():
             return dbi.select(selectRecentUrl)
         except Exception as e:
             return dbLogger.error(e)
+
 
     def recentCrawlCheck(self, _url):
         recentCrawlCheck = """

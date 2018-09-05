@@ -28,12 +28,13 @@ class Crawler():
         self.html = ""
         self.bsObj = ""
         self.linkList = []
-        self.dbTuple = tuple()
 
     def getCrawl(self, _url, recursionLevel):
+        # 나무위키 데이터 크롤링 함수
         try:
             self.url = _url
             crawlLogger.debug("getCrawl url : " + self.url)
+            #크롤링 레벨 제한 : 4
             if recursionLevel > 4:
                 return
 
@@ -55,27 +56,34 @@ class Crawler():
                     self.getEditDate()
                     self.getContent()
 
+                    dbTuple = (self.title, self.url, self.content, self.image, self.editdate, self.html, self.url)
+                    db.insertNamuwikiDB(dbTuple)
 
                 if resp.status_code == 404:
+                    # 나무위키 없는 문서 (404 반환) 시 타이틀만 저장
                     self.getTitle()
                     self.image = None
                     self.editdate = None
                     self.content = None
+                    dbTuple = (self.title, self.url, self.content, self.image, self.editdate, self.html, self.url)
+                    db.insertNamuwikiDB(dbTuple)
+
+                    return
 
             except Exception as e:
                 crawlLogger.error(e)
 
-            self.dbTuple = (self.title, self.url, self.content, self.image, self.editdate, self.html, self.url)
-            db.insertNamuwikiDB(self.dbTuple)
             crawlLogger.info("[rLevel " + str(recursionLevel) + "] title : " + self.title + " url : " + self.url)
+
+
             crawlEnd = time.time()
+            #크롤링 3초 텀
             sleepTime = CRAWLTERM - (crawlEnd - crawlStart)
             if sleepTime > 0:
                 time.sleep(sleepTime)
 
-            if resp.status_code == 200:
-                for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
-                    self.getCrawl(urljoin(BASE_URL, link.get('href')), recursionLevel + 1)
+            for link in self.bsObj.findAll("a", href=re.compile("^(/w/)((?!:).)*?$")):
+                self.getCrawl(urljoin(BASE_URL, link.get('href')), recursionLevel + 1)
 
             return
 
@@ -125,6 +133,7 @@ class Crawler():
 
 
     def getRecentChangeLink(self):
+        #최근 변경문서 json 가져와 가장 최근 문서 주소 반환
         resp = requests.get(RECENTCHANGE_URL)
         data = resp.json()
         return urljoin(BASE_URL, quote(data[0]['document']))
