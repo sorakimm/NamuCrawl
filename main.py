@@ -31,8 +31,3 @@ if __name__ == '__main__':
             mainLogger.error("error url : " + url)
 
         url = crawler.getRecentChangeLink()
-
-
-
-
-

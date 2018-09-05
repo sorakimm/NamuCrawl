@@ -15,7 +15,7 @@ BASE_URL = "https://namu.wiki/w/"
 RECENTCHANGE_URL = "https://namu.wiki/sidebar.json"
 
 db = DB()
-CRAWLTERM = 3.0
+CRAWL_TERM = 3.0
 
 
 class Crawler():
@@ -78,7 +78,7 @@ class Crawler():
 
             crawlEnd = time.time()
             #크롤링 3초 텀
-            sleepTime = CRAWLTERM - (crawlEnd - crawlStart)
+            sleepTime = CRAWL_TERM - (crawlEnd - crawlStart)
             if sleepTime > 0:
                 time.sleep(sleepTime)
 

@@ -21,7 +21,7 @@ class MyLogger(logging.Logger):
 
         try:
             os.makedirs(os.path.dirname(filename))
-        except Exception as reason:
+        except Exception as e:
             pass
         try:
             rtfileHd = logging.handlers.RotatingFileHandler(filename, maxBytes=10 * 1-24 * 1024, backupCount=5)

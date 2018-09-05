@@ -34,6 +34,7 @@ class DB():
         except Exception as e:
             return dbLogger.error(e)
 
+
     def insertNamuwikiDB(self, dbTuple):
         insertDBQuery = """
             INSERT INTO namuwiki (title, url, content, image, editdate, crawltime, html, urlhash)\

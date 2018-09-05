@@ -16,6 +16,7 @@ class DBConnect(object):
         self._db_connection.set_charset('utf8mb4')
         self._db_cur = self._db_connection.cursor()
 
+
     def query(self, query, params=None):
         dbConnectLogger.debug("db query execute")
         self._db_cur.execute(query)
